@@ -1,0 +1,4 @@
+aiohttp>=3.10,<4
+Pillow>=10,<14
+qrcode>=7,<9
+bilibili-api-python==17.4.2
