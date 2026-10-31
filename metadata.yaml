@@ -1,6 +1,6 @@
 name: astrbot_plugin_bili_reader
 display_name: B站内容读取
-desc: 独立登录、检索、正文与可见评论读取，为聊天和社区分享提供接口。
+desc: 把 B站视频发给 AI 机器人，读取视频简介、可用字幕和热门评论，还能按关键词找视频。
 version: 1.0.2
 author: Wyj425
 astrbot_version: ">=4.29.3"
