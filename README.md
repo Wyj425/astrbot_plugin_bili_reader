@@ -4,7 +4,7 @@
 
 分享一个视频链接，问一句「主要讲了什么」「评论区怎么看」，机器人就能根据实际读到的资料回答。也可以让它按关键词找视频。
 
-<img src="logo.png" width="120" alt="B站内容读取插件图标">
+<img src="https://raw.githubusercontent.com/Wyj425/astrbot_plugin_bili_reader/main/logo.png" width="120" alt="B站内容读取插件图标">
 
 ## 能做什么
 
@@ -105,8 +105,8 @@
 
 ## 开发资料
 
-- [接口说明](docs/API.md)
-- [更新记录](CHANGELOG.md)
-- [发布检查](docs/RELEASING.md)
+- [接口说明](https://github.com/Wyj425/astrbot_plugin_bili_reader/blob/main/docs/API.md)
+- [更新记录](https://github.com/Wyj425/astrbot_plugin_bili_reader/blob/main/CHANGELOG.md)
+- [发布检查](https://github.com/Wyj425/astrbot_plugin_bili_reader/blob/main/docs/RELEASING.md)
 
-本插件采用 [MIT 许可证](LICENSE)，第三方组件遵循各自的许可证。
+本插件采用 [MIT 许可证](https://github.com/Wyj425/astrbot_plugin_bili_reader/blob/main/LICENSE)，第三方组件遵循各自的许可证。

@@ -1,10 +1,8 @@
-import asyncio, json, re, time
+import asyncio, json, re
 from datetime import datetime, timedelta
-from pathlib import Path
-from urllib.parse import urlsplit, parse_qs, urlencode
+from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 import aiohttp
-from astrbot.api import logger
 TZ = ZoneInfo('Asia/Shanghai')
 def clean(text, limit=4000):
     import html
@@ -16,15 +14,6 @@ async def bounded_json(response, limit=3*1024*1024):
         if len(body)>limit: raise ValueError('source response too large')
     return json.loads(body)
 
-def matches(text, words):
-    text = text.casefold()
-    for word in words:
-        aliases = [word]
-        if word.lower() in ['apex','apex英雄']: aliases += ['Apex英雄','Apex Legends']
-        if word.lower() in ['lol','英雄联盟']: aliases += ['LOL','英雄联盟']
-        if word in ['游戏趣事','有趣日常','二游']: aliases += {'游戏趣事':['游戏'], '有趣日常':['趣事','搞笑','日常'], '二游':['原神','鸣潮','崩坏','绝区零','明日方舟']}[word]
-        if any(w.casefold() in text for w in aliases): return True
-    return False
 
 from .runtime import link_refs
 class Backend:
@@ -62,7 +51,6 @@ class Backend:
         return out
     async def bili_evidence(self, result):
         from bilibili_api import video,comment,Credential
-        from pathlib import Path
         path=self.root/'credentials.json'
         creds=json.loads(path.read_text()) if path.exists() else {}
         credential=Credential(sessdata=creds.get('sessdata') or None,bili_jct=creds.get('bili_jct') or None)

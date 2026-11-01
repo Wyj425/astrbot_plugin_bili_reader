@@ -1,13 +1,12 @@
-"""Administrator-only login endpoints. Credentials never appear in responses."""
+"""Bilibili QR login and verification for the administrator page."""
 import asyncio
 import base64
 import io
 import json
 import os
-import time
-from dataclasses import asdict
-from urllib.parse import urlsplit,parse_qs
+from urllib.parse import urlsplit, parse_qs
 import aiohttp
+
 
 def store(service, credentials):
     path=service.root/'credentials.json';tmp=path.with_suffix('.tmp')
@@ -15,30 +14,15 @@ def store(service, credentials):
     with os.fdopen(fd,'w') as f:json.dump(credentials,f)
     os.chmod(tmp,0o600);os.replace(tmp,path)
     service.cache.values.clear();service.cache.failures.clear()
-    if hasattr(service.backend,'reader'):
-        service.backend.reader.cache.clear();service.backend.reader.failed.clear()
+
 
 def qr_image(value):
     import qrcode
     out=io.BytesIO();qrcode.make(value).save(out,format='PNG')
     return 'data:image/png;base64,'+base64.b64encode(out.getvalue()).decode()
 
+
 async def begin(s):
-    if s.source=='小红书':
-        data=await s.backend.xhs('login/qrcode')
-        if data.get('is_logged_in'):
-            s.login_state={'state':'done'};return
-        image=data.get('img','')
-        if image and not image.startswith('data:'):image='data:image/png;base64,'+image
-        s.login_state={'state':'scan','qr':image,'expires_in':180}
-        s.login_task=asyncio.create_task(poll_xhs(s));return
-    if s.source=='小黑盒':
-        from .heybox_client.api_client import XiaoheiheApiClient
-        client=XiaoheiheApiClient('reader-login',max_retries=0)
-        try:qr=await client.request_qr()
-        except BaseException:await client.close();raise
-        s.login_state={'state':'scan','qr':qr_image(qr.qr_content),'expires_in':180}
-        s.login_task=asyncio.create_task(poll_heybox(s,client,qr));return
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as c:
         async with c.get('https://passport.bilibili.com/x/passport-login/web/qrcode/generate') as r:
             payload=await r.json()
@@ -47,31 +31,6 @@ async def begin(s):
     s.login_state={'state':'scan','qr':qr_image(data['url']),'expires_in':180}
     s.login_task=asyncio.create_task(poll_bili(s,data['qrcode_key']))
 
-async def poll_heybox(s,client,qr):
-    try:
-        for _ in range(60):
-            await asyncio.sleep(3)
-            state,_,credentials=await client.check_qr(qr)
-            value=state.value.lower()
-            if credentials:
-                store(s,asdict(credentials));s.login_state={'state':'done'};return
-            if value in ('expired','failed'):
-                s.login_state={'state':'expired'};return
-        s.login_state={'state':'expired'}
-    except asyncio.CancelledError:raise
-    except Exception as e:s.login_state={'state':'error','error':type(e).__name__}
-    finally:await client.close()
-
-async def poll_xhs(s):
-    try:
-        for _ in range(45):
-            await asyncio.sleep(4)
-            result=await s.backend.xhs('login/status')
-            if result.get('is_logged_in'):
-                s.login_state={'state':'done'};s.cache.values.clear();return
-        s.login_state={'state':'expired'}
-    except asyncio.CancelledError:raise
-    except Exception as e:s.login_state={'state':'error','error':type(e).__name__}
 
 async def poll_bili(s,key):
     try:
@@ -95,15 +54,8 @@ async def poll_bili(s,key):
     except asyncio.CancelledError:raise
     except Exception as e:s.login_state={'state':'error','error':type(e).__name__}
 
+
 async def verify(s):
-    if s.source=='小红书':
-        data=await s.backend.xhs('login/status')
-        return {'logged_in':bool(data.get('is_logged_in'))}
-    if s.source=='小黑盒':
-        client=s.backend.heybox_client()
-        try:
-            await client.check_credentials();return {'logged_in':True}
-        finally:await client.close()
     path=s.root/'credentials.json'
     creds=json.loads(path.read_text()) if path.exists() else {}
     if not creds.get('sessdata'):return {'logged_in':False}
