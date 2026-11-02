@@ -1,7 +1,7 @@
 name: astrbot_plugin_bili_reader
 display_name: B站内容读取
 desc: 把 B站视频发给 AI 机器人，读取视频简介、可用字幕和热门评论，还能按关键词找视频。
-version: 1.0.5
+version: 1.0.6
 author: Wyj425
 astrbot_version: ">=4.29.3"
 repo: https://github.com/Wyj425/astrbot_plugin_bili_reader
